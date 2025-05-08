@@ -3,13 +3,30 @@ import { useState, useEffect } from "react";
 
 const Index = () => {
   const [loaded, setLoaded] = useState(false);
+  const [shootingStars, setShootingStars] = useState<Array<{id: number, top: string, left: string, duration: string}>>([]);
 
   useEffect(() => {
     // Add a slight delay before showing content for smoother animation
     const timer = setTimeout(() => {
       setLoaded(true);
     }, 300);
-    return () => clearTimeout(timer);
+
+    // Generate new shooting star every 2 seconds
+    const shootingStarInterval = setInterval(() => {
+      const newStar = {
+        id: Date.now(),
+        top: `${Math.random() * 70}%`,
+        left: `${Math.random() * 100}%`,
+        duration: `${Math.random() * 2 + 1}s`
+      };
+      
+      setShootingStars(prev => [...prev.slice(-10), newStar]); // Keep only last 10 stars
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(shootingStarInterval);
+    };
   }, []);
 
   return (
@@ -28,6 +45,51 @@ const Index = () => {
         </video>
         <div className="absolute inset-0 bg-gradient-to-tr from-[#0f041b]/60 via-[#150630]/40 to-transparent z-10"></div>
       </div>
+
+      {/* Animated Spaceship */}
+      <div className="fixed z-0 pointer-events-none">
+        <img 
+          src="https://i.imgur.com/jFYT7XB.png" 
+          alt="Spaceship"
+          className="w-16 h-16 md:w-24 md:h-24 opacity-70 animate-spaceship"
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '-10%',
+            animation: 'spaceship 30s linear infinite'
+          }}
+        />
+      </div>
+
+      {/* Floating Galaxy */}
+      <div className="fixed bottom-0 right-0 z-0 pointer-events-none opacity-40">
+        <img 
+          src="https://i.imgur.com/DzZq8Ep.png" 
+          alt="Galaxy"
+          className="w-64 h-64 md:w-96 md:h-96"
+          style={{
+            animation: 'float 15s ease-in-out infinite'
+          }}
+        />
+      </div>
+
+      {/* Shooting Stars */}
+      {shootingStars.map(star => (
+        <div 
+          key={star.id}
+          className="absolute z-0 pointer-events-none"
+          style={{
+            top: star.top,
+            left: star.left,
+            width: '2px',
+            height: '2px',
+            background: 'white',
+            borderRadius: '50%',
+            boxShadow: '0 0 4px 2px rgba(255, 255, 255, 0.7)',
+            animation: `shooting-star ${star.duration} linear forwards`
+          }}
+        />
+      ))}
 
       <div
         className={`container max-w-3xl mx-auto px-6 py-12 md:py-20 text-center transition-all duration-1000 ease-out ${
